@@ -1,0 +1,121 @@
+<mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/29.6.6 Chrome/144.0.7559.236 Electron/40.8.4 Safari/537.36" version="29.6.6">
+  <diagram name="Страница-1" id="EXESI836WuEqx6SxPcZ8">
+    <mxGraphModel dx="1188" dy="701" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="ljHtidOdr5WGQ0nDOZno-2" parent="1" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#d80073;fontColor=#ffffff;strokeColor=#A50040;" value="Пользователь" vertex="1">
+          <mxGeometry height="60" width="30" x="30" y="180" as="geometry" />
+        </mxCell>
+        <mxCell id="ljHtidOdr5WGQ0nDOZno-16" edge="1" parent="1" style="endArrow=classic;html=1;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="ljHtidOdr5WGQ0nDOZno-3" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="70" y="210" as="sourcePoint" />
+            <mxPoint x="200" y="170" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ljHtidOdr5WGQ0nDOZno-17" edge="1" parent="1" style="endArrow=classic;html=1;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="ljHtidOdr5WGQ0nDOZno-4" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="70" y="210" as="sourcePoint" />
+            <mxPoint x="200" y="170" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ljHtidOdr5WGQ0nDOZno-18" edge="1" parent="1" style="endArrow=classic;html=1;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="ljHtidOdr5WGQ0nDOZno-5" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="70" y="210" as="sourcePoint" />
+            <mxPoint x="200" y="170" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ljHtidOdr5WGQ0nDOZno-19" edge="1" parent="1" style="endArrow=classic;html=1;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="ljHtidOdr5WGQ0nDOZno-6" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="70" y="210" as="sourcePoint" />
+            <mxPoint x="200" y="270" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ljHtidOdr5WGQ0nDOZno-20" edge="1" parent="1" style="endArrow=classic;html=1;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="ljHtidOdr5WGQ0nDOZno-7" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="70" y="210" as="sourcePoint" />
+            <mxPoint x="200" y="270" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ljHtidOdr5WGQ0nDOZno-21" edge="1" parent="1" style="endArrow=classic;html=1;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="ljHtidOdr5WGQ0nDOZno-8" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="70" y="210" as="sourcePoint" />
+            <mxPoint x="200" y="270" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ljHtidOdr5WGQ0nDOZno-22" edge="1" parent="1" style="endArrow=classic;html=1;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="ljHtidOdr5WGQ0nDOZno-9" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="70" y="210" as="sourcePoint" />
+            <mxPoint x="200" y="270" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ljHtidOdr5WGQ0nDOZno-23" edge="1" parent="1" style="endArrow=classic;html=1;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="ljHtidOdr5WGQ0nDOZno-10" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="70" y="210" as="sourcePoint" />
+            <mxPoint x="200" y="270" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ljHtidOdr5WGQ0nDOZno-24" edge="1" parent="1" style="endArrow=classic;html=1;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="ljHtidOdr5WGQ0nDOZno-11" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="70" y="210" as="sourcePoint" />
+            <mxPoint x="200" y="270" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ljHtidOdr5WGQ0nDOZno-25" edge="1" parent="1" style="endArrow=classic;html=1;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="ljHtidOdr5WGQ0nDOZno-12" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="70" y="210" as="sourcePoint" />
+            <mxPoint x="200" y="270" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="ljHtidOdr5WGQ0nDOZno-3" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d80073;fontColor=#ffffff;strokeColor=#A50040;" value="Авторизация" vertex="1">
+          <mxGeometry height="30" width="120" x="195" y="15" as="geometry" />
+        </mxCell>
+        <mxCell id="ljHtidOdr5WGQ0nDOZno-4" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d80073;fontColor=#ffffff;strokeColor=#A50040;" value="Просмотр личных файлов" vertex="1">
+          <mxGeometry height="30" width="120" x="195" y="55" as="geometry" />
+        </mxCell>
+        <mxCell id="ljHtidOdr5WGQ0nDOZno-5" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d80073;fontColor=#ffffff;strokeColor=#A50040;" value="Загрузка файла на облако" vertex="1">
+          <mxGeometry height="30" width="120" x="195" y="95" as="geometry" />
+        </mxCell>
+        <mxCell id="ljHtidOdr5WGQ0nDOZno-6" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d80073;fontColor=#ffffff;strokeColor=#A50040;" value="Выгрузка файла с облака" vertex="1">
+          <mxGeometry height="30" width="120" x="195" y="135" as="geometry" />
+        </mxCell>
+        <mxCell id="ljHtidOdr5WGQ0nDOZno-7" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d80073;fontColor=#ffffff;strokeColor=#A50040;" value="Удаление файла с облака" vertex="1">
+          <mxGeometry height="30" width="120" x="195" y="175" as="geometry" />
+        </mxCell>
+        <mxCell id="ljHtidOdr5WGQ0nDOZno-8" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d80073;fontColor=#ffffff;strokeColor=#A50040;" value="Замена файла с облака" vertex="1">
+          <mxGeometry height="30" width="120" x="195" y="215" as="geometry" />
+        </mxCell>
+        <mxCell id="ljHtidOdr5WGQ0nDOZno-9" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d80073;fontColor=#ffffff;strokeColor=#A50040;" value="Открыть файл на облаке по ключу" vertex="1">
+          <mxGeometry height="30" width="120" x="195" y="255" as="geometry" />
+        </mxCell>
+        <mxCell id="ljHtidOdr5WGQ0nDOZno-10" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d80073;fontColor=#ffffff;strokeColor=#A50040;" value="Создание ключа для публичного файла" vertex="1">
+          <mxGeometry height="30" width="120" x="195" y="295" as="geometry" />
+        </mxCell>
+        <mxCell id="ljHtidOdr5WGQ0nDOZno-11" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d80073;fontColor=#ffffff;strokeColor=#A50040;" value="Просмотр активных ключей" vertex="1">
+          <mxGeometry height="30" width="120" x="195" y="335" as="geometry" />
+        </mxCell>
+        <mxCell id="ljHtidOdr5WGQ0nDOZno-12" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d80073;fontColor=#ffffff;strokeColor=#A50040;" value="Удаление активных ключей" vertex="1">
+          <mxGeometry height="30" width="120" x="195" y="375" as="geometry" />
+        </mxCell>
+        <mxCell id="eSNNg30rG3pGOEliGuu--2" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d80073;fontColor=#ffffff;strokeColor=#A50040;" value="Редактирование аккаунта" vertex="1">
+          <mxGeometry height="30" width="120" x="195" y="420" as="geometry" />
+        </mxCell>
+        <mxCell id="eSNNg30rG3pGOEliGuu--3" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d80073;fontColor=#ffffff;strokeColor=#A50040;" value="Удаление аккаунта" vertex="1">
+          <mxGeometry height="30" width="120" x="195" y="460" as="geometry" />
+        </mxCell>
+        <mxCell id="eSNNg30rG3pGOEliGuu--4" edge="1" parent="1" style="endArrow=classic;html=1;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="eSNNg30rG3pGOEliGuu--2" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="70" y="210" as="sourcePoint" />
+            <mxPoint x="390" y="290" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="eSNNg30rG3pGOEliGuu--5" edge="1" parent="1" style="endArrow=classic;html=1;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" target="eSNNg30rG3pGOEliGuu--3" value="">
+          <mxGeometry height="50" relative="1" width="50" as="geometry">
+            <mxPoint x="70" y="210" as="sourcePoint" />
+            <mxPoint x="330" y="290" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
