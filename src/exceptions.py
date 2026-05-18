@@ -1,5 +1,7 @@
 class UserNotFoundError(Exception):
     pass
+class SessionNotFoundError(Exception):
+    pass
 class WrongPasswordError(Exception):
     pass
 class AvatarNotFoundError(Exception):
