@@ -16,3 +16,5 @@ class ValidationError(Exception):
         super().__init__(message)
 class NotFoundError(Exception):
     pass
+class InvalidSession(Exception):
+    pass

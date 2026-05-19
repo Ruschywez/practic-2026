@@ -165,7 +165,7 @@ class SessionRepository:
         if isinstance(session, Session):
             session_to_delete = session
         else:
-            session_to_delete = SessionRepository.get_by_key(session)
+            session_to_delete = await SessionRepository.get_by_key(session, asy)
         asy.delete(session_to_delete)
         await asy.commit()
 """
@@ -179,8 +179,8 @@ class LinkRepository:
         return list(result.scalars().all())
     
     @staticmethod
-    async def get_by_key(key: str, asy: AsyncSession) -> List[Link]:
-        owner_user: User = SessionRepository.get_user(key, Session)
+    async def get_by_session_key(key: str, asy: AsyncSession) -> List[Link]:
+        owner_user: User = await SessionRepository.get_user(key, asy)
         try:
             query = select(Link).where(Link.user_id == owner_user.id)
             result = await asy.execute(query)
@@ -195,7 +195,7 @@ class LinkRepository:
             if isinstance(user, User):
                 owner_user: User = user
             else:
-                owner_user: User = UserRepository.get_by_id(user, asy)
+                owner_user: User = await UserRepository.get_by_id(user, asy)
             query = select(Link).where(Link.user_id == owner_user.id)
             result = await asy.execute(query)
             return list(result.scalars().all())
@@ -220,8 +220,8 @@ class LinkRepository:
         if isinstance(user, User):
             owner_user: User = user
         else:
-            owner_user: User = UserRepository.get_by_id(user)
-        query = select(Link).where(Link.path == path & Link.user_id == owner_user.id)
+            owner_user: User = await UserRepository.get_by_id(user, asy)
+        query = select(Link).where((Link.path == path) & (Link.user_id == owner_user.id))
         result = await asy.execute(query)
         return list(result.scalars().all())
     
@@ -262,6 +262,6 @@ class LinkRepository:
         if isinstance(link, Link):
             link_to_delete = link
         else:
-            link_to_delete = LinkRepository.get_by_key(link)
+            link_to_delete = await LinkRepository.get_by_key(link)
         asy.delete(link_to_delete)
         await asy.commit()
