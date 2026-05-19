@@ -7,7 +7,7 @@ from src.const import ENV_PATH, EXPIRATION_TIME
 from src.entities import User, Session, Link
 from src.repositories import UserRepository, SessionRepository, LinkRepository
 from sqlalchemy.ext.asyncio import AsyncSession
-from src.exceptions import InvalidSession, WrongPasswordError
+from src.exceptions import InvalidSession, WrongPasswordError, ConflictError
 import bcrypt
 
 class SessionService:
@@ -49,4 +49,33 @@ class SessionService:
         return session.key
     @staticmethod
     async def extension(key: str, asy: AsyncSession):
-        session = 
+        session: Session = await SessionService.get_session(key, asy)
+        await SessionRepository.update(session, asy, expires_at=date.today + EXPIRATION_TIME)
+    @staticmethod
+    async def logout(key: str, asy: AsyncSession):
+        return await SessionRepository.delete(key, asy)
+class UserService:
+    @staticmethod
+    async def register(login: str, password: str, asy: AsyncSession) -> User:
+        try:
+            _ = await UserRepository.get_by_login(login, asy)
+            raise ConflictError("User with this login already exists")
+        except Exception:
+            pass
+        hash_password: str = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
+        user: User = await UserRepository.create(login=login, password=hash_password, asy=asy)
+        return user
+    @staticmethod
+    async def update_profile(key: str, asy: AsyncSession, **kwargs):
+        user: User = await SessionService.get_user(key, asy)
+        await UserRepository.update(user, asy, **kwargs)
+    @staticmethod
+    async def delete(key: str, asy: AsyncSession):
+        user = await SessionService.get_user(key, asy)
+        await UserRepository.delete(user, asy)
+    @staticmethod
+    async def get_info(key: str, asy: AsyncSession) -> dict:
+        user = await SessionService.get_user(key, asy)
+        return {
+            "login": user.login,
+        }

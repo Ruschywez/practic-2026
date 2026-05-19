@@ -18,3 +18,5 @@ class NotFoundError(Exception):
     pass
 class InvalidSession(Exception):
     pass
+class AlreadyExistsError(Exception):
+    pass
