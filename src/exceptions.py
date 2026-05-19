@@ -1,7 +1,3 @@
-class UserNotFoundError(Exception):
-    pass
-class SessionNotFoundError(Exception):
-    pass
 class WrongPasswordError(Exception):
     pass
 class AvatarNotFoundError(Exception):
@@ -18,3 +14,5 @@ class ValidationError(Exception):
     def __init__(self, message):
         self.message = message
         super().__init__(message)
+class NotFoundError(Exception):
+    pass
