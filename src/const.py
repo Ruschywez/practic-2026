@@ -7,3 +7,4 @@ CONTAINER_PATH = CORE_PATH / 'container'
 
 DB_URL = f"sqlite+aiosqlite:///{DB_PATH.as_posix()}"
 EXPIRATION_TIME = 30 # days
+CHUNK_SIZE = 1024 * 1024
