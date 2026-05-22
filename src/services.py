@@ -87,21 +87,21 @@ class UserService:
 class FileService:
     @staticmethod
     async def is_owner(key: str, full_path: Union[str, Path], asy: AsyncSession) -> bool:
-        user: User = SessionService.get_user(key, asy) # can raise
+        user: User = await SessionService.get_user(key, asy) # can raise
         if isinstance(full_path, Path):
             full_path = str(full_path)
         return True if user.login in full_path else False
     @staticmethod
     async def get_full_path(key:  str, path: Union[str, Path], asy: AsyncSession):
         # container_path (const: CONTAINER_PATH) / owner (login) / local_path (path)
-        user: User = SessionService.get_user(key, asy)
+        user: User = await SessionService.get_user(key, asy)
         full_path = CONTAINER_PATH / user.login / path
         return full_path
     @staticmethod
     async def is_path_exists(full_path: str) -> bool:
-        return Path.exists()
+        return full_path.exists()
     @staticmethod
-    async def upload_file(file_path: str, chunk_size: int = CHUNK_SIZE):
+    async def upload_file(file_path: str):
         # Need to take full path!
         loop = asyncio.get_event_loop()
         def open_file():
@@ -110,7 +110,7 @@ class FileService:
         try:
             while True:
                 def read_chunk():
-                    return file.read(chunk_size)
+                    return file.read(CHUNK_SIZE)
                 chunk = await loop.run_in_executor(None, read_chunk)
                 if not chunk:
                     break
@@ -134,6 +134,17 @@ class FileService:
                 await loop.run_in_executor(None, write_chunk)
         finally:
             await loop.run_in_executor(None, dest_file.close)
+    @staticmethod
+    async def check_file_info(full_path: Union[str, Path]) -> Dict:
+        def _sync_check():
+            path_obj = Path(full_path)
+            data = {
+                "name": path_obj.name,
+                "size_bytes": path_obj.stat().st_size,
+                "last_modified": datetime.fromtimestamp(path_obj.stat().st_ctime).strftime('%Y-%m-%d %H:%M:%S'),
+            }
+            return data
+        return await asyncio.to_thread(_sync_check)
     @staticmethod
     async def check_directory(full_path: Union[str, Path]) -> List[Dict]:
         def _sync_check():
@@ -171,10 +182,55 @@ class FileService:
         await asyncio.to_thread(full_path.unlink)
 class LinkService:
     @staticmethod
-    async def create_link(session_key: str, link_key: str) -> str:
-        pass
+    async def create_link(session_key: str, path: Union[str, Path], asy: AsyncSession) -> str:
+        user: User = SessionService.get_user(session_key, asy)
+        new_link: Link = await LinkRepository.create(
+            key=secrets.token_urlsafe(192),
+            user=user,
+            path=str(path),
+            asy=asy
+        )
+        return new_link.key
     @staticmethod
-    async def delete_link(key: str, link_id):
-        pass
+    async def delete_link(session: Union[str, Session], link: Union[Link, str], asy: AsyncSession):
+        session_user: User = await SessionService.get_user(session, asy)
+        link_user: User = await LinkRepository.get_owner(link, asy)
+        if UserRepository.is_same(session_user, link_user):
+            await LinkRepository.delete(link, asy)
     @staticmethod
-    async def check_directory(key: str) -> List[dict]
+    async def get_file_info_by_link(link: Union[str, Link], asy: AsyncSession) -> Dict:
+        path_obj: Path = await LinkService.get_full_path(link, asy)
+        def _sync_check():
+            data = {
+                    "name": path_obj.name,
+                    "size_bytes": path_obj.stat().st_size,
+                    "last_modified": datetime.fromtimestamp(path_obj.stat().st_ctime).strftime('%Y-%m-%d %H:%M:%S'),
+                }
+            return data
+        return await asyncio.to_thread(_sync_check)
+    @staticmethod
+    async def get_file_stream_by_link(link: Union[str, Link], asy: AsyncSession):
+        # Need to take full path!
+        file_path: Path = await LinkService.get_full_path(link, asy)
+        loop = asyncio.get_event_loop()
+        def open_file():
+            return open(file_path, "rb")
+        file = await loop.run_in_executor(None, open_file)
+        try:
+            while True:
+                def read_chunk():
+                    return file.read(CHUNK_SIZE)
+                chunk = await loop.run_in_executor(None, read_chunk)
+                if not chunk:
+                    break
+                yield chunk
+        finally:
+            await loop.run_in_executor(None, file.close)
+    @staticmethod
+    async def get_full_path(link: Union[str, Link], asy: AsyncSession):
+        # container_path (const: CONTAINER_PATH) / owner (login) / local_path (path)
+        owner: User = await LinkRepository.get_owner(link, asy)
+        if isinstance(link, str):
+            link = await LinkRepository.get_by_key(link, asy)
+        full_path = CONTAINER_PATH / owner.login / link.path
+        return full_path

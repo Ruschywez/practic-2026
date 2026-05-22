@@ -10,6 +10,9 @@ from datetime import date
 """
 class UserRepository:
     @staticmethod
+    def is_same(user1: User, user2: User) -> bool:
+        return user1.id == user2.id
+    @staticmethod
     async def get_all(asy: AsyncSession) -> List[User]:
         query = select(User)
         result = await asy.execute(query)
@@ -93,18 +96,20 @@ class SessionRepository:
             raise NotFoundError
     
     @staticmethod
-    async def get_user(key: str, asy: AsyncSession) -> User:
+    async def get_user(session: Union[str, Session], asy: AsyncSession) -> User:
         try:
-            session = await SessionRepository.get_by_key(key, asy)
+            if isinstance(session, str):
+                session: Session = await SessionRepository.get_by_key(session, asy)
             user: User = await UserRepository.get_by_id(session.user_id, asy)
             return user
         except NoResultFound:
             raise NotFoundError
     
     @staticmethod
-    async def get_user_id(key: str, asy: AsyncSession) -> int:
+    async def get_user_id(session: Union[str, Session], asy: AsyncSession) -> int:
         try:
-            session = await SessionRepository.get_by_key(key, asy)
+            if isinstance(session, str):
+                session: Session = await SessionRepository.get_by_key(session, asy)
             return session.user_id
         except NoResultFound:
             raise NotFoundError
@@ -174,9 +179,12 @@ class SessionRepository:
 class LinkRepository:
     @staticmethod
     async def get_by_key(key: str, asy: AsyncSession) -> List[Link]:
-        query = select(Link).where(Link.key == key)
-        result = await asy.execute(query)
-        return list(result.scalars().all())
+        try:
+            link = await asy.get_one(Link, key)
+            return link
+        except NoResultFound:
+            print(f"Link with key = {key} not found")
+            raise NotFoundError
     
     @staticmethod
     async def get_by_session_key(key: str, asy: AsyncSession) -> List[Link]:
@@ -188,7 +196,12 @@ class LinkRepository:
         except NoResultFound:
             print(f"Link by key {key} not found")
             raise NotFoundError
-    
+    @staticmethod
+    async def get_owner(link: Union[Link, str], asy: AsyncSession) -> User:
+        if isinstance(link, str):
+            link = await LinkRepository.get_by_key(link, asy)
+        user: User = await UserRepository.get_by_id(link.user_id, asy)
+        return user
     @staticmethod
     async def get_by_user(user: Union[User, int], asy: AsyncSession) -> List[Link]:
         try:
