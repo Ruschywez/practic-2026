@@ -1,17 +1,21 @@
 from src.entities import User, Session, Link
-from sqlalchemy import select
+from sqlalchemy import select, exists
 from sqlalchemy.exc import NoResultFound, IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List, Optional, Union
-from src.exceptions import NotFoundError
+from src.exceptions import NotFoundError, SessionError, ConflictError
 from datetime import date
 """
     User
 """
 class UserRepository:
+    allowed_keys = User.__table__.columns.keys()
     @staticmethod
-    def is_same(user1: User, user2: User) -> bool:
-        return user1.id == user2.id
+    async def is_login_exists(login: str, asy: AsyncSession) -> bool:
+        query = select(exists().where(User.login == login))
+        result = await asy.execute(query)
+        return result.scalar_one()
+        
     @staticmethod
     async def get_all(asy: AsyncSession) -> List[User]:
         query = select(User)
@@ -24,62 +28,50 @@ class UserRepository:
             user = await asy.get_one(User, id)
             return user
         except NoResultFound:
-            print(f"User with id = {id} not found")
-            raise NotFoundError
+            raise NotFoundError(f"User with id = {id} not found")
     
     @staticmethod
     async def get_by_login(login: str, asy: AsyncSession) -> User:
         try:
             query = select(User).where(User.login == login)
             result = await asy.execute(query)
-            user = result.scalar_one() # login is unique key
+            user: User = result.scalar_one() # login is unique key
             # can't return None. Will raise error if not found
             return user
         except NoResultFound:
-            print(f"User with login = {login} is not found")
-            raise NotFoundError
+            raise NotFoundError(f"User with login = {login} is not found")
     
     @staticmethod
-    async def create(login: str, password: str, asy: AsyncSession) -> User:
-        try:
-            await UserRepository.get_by_login(login, asy)
-            raise ValueError(f"User with login '{login} already exists")
-        except NotFoundError:
-            pass
+    async def create(login: str, password: str, asy: AsyncSession):
+        # need to commit and roll back if exception
+        conflict_exception = ConflictError(f"User with login '{login}' already exists")
+        if await UserRepository.is_login_exists(login, asy):
+            raise conflict_exception
         new_user: User = User(login=login, password=password)
         asy.add(new_user)
-        try:
-            await asy.commit()
-            await asy.refresh(new_user)
-            return new_user
-        except IntegrityError:
-            await asy.rollback()
-            raise ValueError(f"User with login '{login} already exists")
     
     @staticmethod
     async def update(user: User, asy: AsyncSession, **kwargs) -> User:
-        allowed_keys = user.__table__.columns.keys()
+        # need to commit and roll back if exception
         for key, value in kwargs.items():
-            if key in allowed_keys:
+            if key in UserRepository.allowed_keys:
                 setattr(user, key, value)
             else:
-                print(f"{key} is not allowed for user")
-        try:
-            await asy.commit()
-            await asy.refresh(user)
-            return user
-        except Exception as e:
-            await asy.rollback()
-            raise e
+                raise ValueError(f"{key} is not allowed for user")
     
     @staticmethod
     async def delete(user: User, asy: AsyncSession):
         asy.delete(user)
-        await asy.commit()
+        
 """
     Session
 """
 class SessionRepository:
+    allowed_keys = Session.__table__.columns.keys()
+    @staticmethod
+    def is_active(session: Session):
+        return session.expires_at >= date.today()
+    
     @staticmethod
     async def get_all(asy: AsyncSession) -> List[Session]:
         query = select(Session)
@@ -89,28 +81,16 @@ class SessionRepository:
     @staticmethod
     async def get_by_key(key: str, asy: AsyncSession) -> Session:
         try:
-            session = await asy.get_one(Session, key)
-            return session
+            return await asy.get_one(Session, key)
         except NoResultFound:
             print(f"Session with key = {key} not found")
             raise NotFoundError
     
     @staticmethod
-    async def get_user(session: Union[str, Session], asy: AsyncSession) -> User:
+    async def get_user(session: Session, asy: AsyncSession) -> User:
         try:
-            if isinstance(session, str):
-                session: Session = await SessionRepository.get_by_key(session, asy)
             user: User = await UserRepository.get_by_id(session.user_id, asy)
             return user
-        except NoResultFound:
-            raise NotFoundError
-    
-    @staticmethod
-    async def get_user_id(session: Union[str, Session], asy: AsyncSession) -> int:
-        try:
-            if isinstance(session, str):
-                session: Session = await SessionRepository.get_by_key(session, asy)
-            return session.user_id
         except NoResultFound:
             raise NotFoundError
     
@@ -129,62 +109,38 @@ class SessionRepository:
     @staticmethod
     async def create(
             key: str,
-            user: Union[User, int],
+            user: User,
             created_at: date,
             expires_at: date,
             asy: AsyncSession
-            ) -> Session:
-        if isinstance(user, User):
-            user_id = user.id
-        else:
-            user_obj = await UserRepository.get_by_id(user, asy)
-            user_id = user_obj.id
-        new_session: Session = Session(key=key, user_id=user_id, created_at=created_at, expires_at=expires_at)
-        try:
-            asy.add(new_session)
-            await asy.commit()
-            await asy.refresh(new_session)
-            return new_session
-        except Exception as e:
-            await asy.rollback()
-            raise e
+            ):
+        new_session: Session = Session(key=key, user_id=user.id, created_at=created_at, expires_at=expires_at)
+        asy.add(new_session)
 
     @staticmethod
     async def update(session: Session, asy: AsyncSession, **kwargs) -> Session:
-        allowed_keys = session.__table__.columns.keys()
         for key, value in kwargs.items():
-            if key in allowed_keys:
+            if key in SessionRepository.allowed_keys:
                 setattr(session, key, value)
             else:
-                print(f"{key} is not allowed for session")
-        try:
-            await asy.commit()
-            await asy.refresh(session)
-            return session
-        except Exception as e:
-            await asy.rollback()
-            raise e
+                raise ValueError(f"{key} is not allowed for session")
     
     @staticmethod
-    async def delete(session: Union[Session, str], asy: AsyncSession):
-        if isinstance(session, Session):
-            session_to_delete = session
-        else:
-            session_to_delete = await SessionRepository.get_by_key(session, asy)
-        asy.delete(session_to_delete)
-        await asy.commit()
+    async def delete(session: Session, asy: AsyncSession):
+        asy.delete(session)
+        
 """
     Links
 """
 class LinkRepository:
+    allowed_keys = Link.__table__.columns.keys()
     @staticmethod
-    async def get_by_key(key: str, asy: AsyncSession) -> List[Link]:
+    async def get_by_key(key: str, asy: AsyncSession) -> Link:
         try:
             link = await asy.get_one(Link, key)
             return link
         except NoResultFound:
-            print(f"Link with key = {key} not found")
-            raise NotFoundError
+            raise NotFoundError(f"Link with key = {key} not found")
     
     @staticmethod
     async def get_by_session_key(key: str, asy: AsyncSession) -> List[Link]:
@@ -196,25 +152,19 @@ class LinkRepository:
         except NoResultFound:
             print(f"Link by key {key} not found")
             raise NotFoundError
+    
     @staticmethod
-    async def get_owner(link: Union[Link, str], asy: AsyncSession) -> User:
-        if isinstance(link, str):
-            link = await LinkRepository.get_by_key(link, asy)
-        user: User = await UserRepository.get_by_id(link.user_id, asy)
-        return user
+    async def get_owner(link: Link, asy: AsyncSession) -> User:
+        return await UserRepository.get_by_id(link.user_id, asy)
+    
     @staticmethod
-    async def get_by_user(user: Union[User, int], asy: AsyncSession) -> List[Link]:
+    async def get_by_user(user: User, asy: AsyncSession) -> List[Link]:
         try:
-            if isinstance(user, User):
-                owner_user: User = user
-            else:
-                owner_user: User = await UserRepository.get_by_id(user, asy)
-            query = select(Link).where(Link.user_id == owner_user.id)
+            query = select(Link).where(Link.user_id == user.id)
             result = await asy.execute(query)
             return list(result.scalars().all())
         except NoResultFound:
-            print("Link by user {user} nnot found")
-            raise NotFoundError
+            raise NotFoundError("Link by user {user} nnot found")
     
     @staticmethod
     async def get_all(asy: AsyncSession) -> List[Link]:
@@ -229,52 +179,25 @@ class LinkRepository:
         return list(result.scalars().all())
     
     @staticmethod
-    async def get_by_owner_and_path(user: Union[User, int], path: str, asy: AsyncSession) -> List[Link]:
-        if isinstance(user, User):
-            owner_user: User = user
-        else:
-            owner_user: User = await UserRepository.get_by_id(user, asy)
-        query = select(Link).where((Link.path == path) & (Link.user_id == owner_user.id))
+    async def get_by_owner_and_path(user: User, path: str, asy: AsyncSession) -> List[Link]:
+        query = select(Link).where((Link.path == path) & (Link.user_id == user.id))
         result = await asy.execute(query)
         return list(result.scalars().all())
     
     @staticmethod
-    async def create(key: str, user: Union[User, int], path: str, asy: AsyncSession) -> Link:
-        if isinstance(user, User):
-            owner_user: User = user
-        else:
-            owner_user: User = UserRepository.get_by_id(user, asy)
-        new_link = Link(key=key, user_id=owner_user.id, path=path)
-        try:
-            asy.add(new_link)
-            await asy.commit()
-            await asy.refresh(new_link)
-            return new_link
-        except Exception as e:
-            await asy.rollback()
-            raise e
+    async def create(key: str, user: User, path: str, asy: AsyncSession): 
+        new_link = Link(key=key, user_id=user.id, path=path)
+        asy.add(new_link)
     
     @staticmethod
     async def update(link: Link, asy: AsyncSession, **kwargs) -> Link:
-        allowed_keys = link.__table__.columns.keys()
         for key, value in kwargs.items():
-            if key in allowed_keys:
+            if key in LinkRepository.allowed_keys:
                 setattr(link, key, value)
             else:
-                print(f"{key} is not allowed for link")
-        try:
-            await asy.commit()
-            await asy.refresh(link)
-            return link
-        except Exception as e:
-            await asy.rollback()
-            raise e
+                raise ValueError(f"{key} is not allowed for link")
     
     @staticmethod
-    async def delete(link: Union[Link, str], asy: AsyncSession):
-        if isinstance(link, Link):
-            link_to_delete = link
-        else:
-            link_to_delete = await LinkRepository.get_by_key(link)
-        asy.delete(link_to_delete)
-        await asy.commit()
+    async def delete(link: Link, asy: AsyncSession):
+        asy.delete(link)
+        
