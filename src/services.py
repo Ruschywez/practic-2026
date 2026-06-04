@@ -1,6 +1,6 @@
 from pathlib import Path
 from datetime import date
-from typing import List, Dict, Union
+from typing import List, Dict, Union, AsyncGenerator
 import secrets
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.const import EXPIRATION_TIME, CONTAINER_PATH, CHUNK_SIZE
@@ -10,7 +10,10 @@ from src.db_connect import async_session_factory
 from src.exceptions import WrongPasswordError, ConflictError, SessionError, NotFoundError
 import bcrypt
 import asyncio
+import aiofiles
 from datetime import datetime
+import os
+from fastapi import UploadFile, HTTPException
 
 """
     there is two types of methods:
@@ -111,6 +114,10 @@ class UserService:
             user = await SessionService.get_user(key, asy)
             return {"login": user.login}
 class FileService:
+    CONTAINER_PATH.mkdir(parents=True, exist_ok=True)
+    """
+        ref: https://habr.com/ru/articles/729340/
+    """
     @staticmethod
     async def is_owner(key: str, full_path: Union[str, Path], asy: AsyncSession) -> bool:
         user: User = await SessionService.get_user(key, asy) # can raise
@@ -120,51 +127,44 @@ class FileService:
         return str(Path(full_path).resolve()).startswith(expected_prefix + os.sep)
     
     @staticmethod
-    async def get_full_path(key:  str, path: Union[str, Path], asy: AsyncSession):
-        # container_path (const: CONTAINER_PATH) / owner (login) / local_path (path)
-        user: User = await SessionService.get_user(key, asy)
-        full_path = CONTAINER_PATH / user.login / path
-        return full_path
+    async def get_full_path(key: str, file_name: str):
+        # container_path (const: CONTAINER_PATH) / owner (login) / file_name
+        async with async_session_factory() as asy:
+            user: User = await SessionService.get_user(key, asy)
+            full_path = CONTAINER_PATH / user.login / file_name
+            return full_path
     
     @staticmethod
     async def is_path_exists(full_path: str) -> bool:
         return Path(full_path.exists())
     
     @staticmethod
-    async def upload_file(file_path: str):
+    async def send_file(file_path: str) -> AsyncGenerator[bytes, None, None]:
         # Need to take full path!
-        loop = asyncio.get_event_loop()
-        def open_file():
-            return open(file_path, "rb")
-        file = await loop.run_in_executor(None, open_file)
-        try:
-            while True:
-                def read_chunk():
-                    return file.read(CHUNK_SIZE)
-                chunk = await loop.run_in_executor(None, read_chunk)
-                if not chunk:
-                    break
+        async with aiofiles.open(file_path, 'rb') as file:
+            chunk = await file.read(CHUNK_SIZE)
+            while chunk:
                 yield chunk
-        finally:
-            await loop.run_in_executor(None, file.close)
+                chunk = await file.read(CHUNK_SIZE)
     
     @staticmethod
-    async def save_file(file: upload_file, destination: Union[str, Path]):
-        # Need to take full path!ты 
-        loop = asyncio.get_event_loop()
-        def open_dest():
-            return open(destination, "wb")
-        dest_file = await loop.run_in_executor(None, open_dest)
+    async def save_file(upload_file: UploadFile, file_path: str) -> None:
+        # Need to take full path!
         try:
-            while True:
-                chunk = await file.read(1024 * 1024)
-                if not chunk:
-                    break
-                def write_chunk():
-                    dest_file.write(chunk)
-                await loop.run_in_executor(None, write_chunk)
+            async with aiofiles.open(file_path, 'wb') as file:
+                while True:
+                    chunk = await upload_file.read(CHUNK_SIZE)
+                    if not chunk:
+                        break
+                    await file.write(chunk)
+        except Exception as e:
+            raise HTTPException(
+                status_code=500,
+                detail=f"Error saving file: {str(e)}"
+            )
         finally:
-            await loop.run_in_executor(None, dest_file.close)
+            await upload_file.close()
+        
     
     @staticmethod
     async def check_file_info(full_path: Union[str, Path]) -> Dict:
